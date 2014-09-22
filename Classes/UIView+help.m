@@ -41,7 +41,7 @@
 
 -(CGFloat)heigth
 {
-    return self.frame.size.height;
+    return self.frame.size.heigth;
 }
 
 -(void)setHeigth:(CGFloat)heigth
@@ -105,32 +105,15 @@
 
 -(UIImage *)cropRectImageFromView:(CGRect)rectToCut
 {
-    UIImage *snapshot;
-    CGImageRef UIGetScreenImage();
-    CGImageRef cgScreen = UIGetScreenImage();
-    if (cgScreen)
-    {
-        snapshot = [UIImage imageWithCGImage:cgScreen];
-        CGImageRelease(cgScreen);
-    }
-    
-    CGRect rect;
-    //高清截图需要扩大2倍范围 不高清得就直接按范围切，注意高清版本的ios7系统 妈的20px导航也要考虑在内，如果是ios7以上得 （CGRectMake（，y，，）这个y 要多加20也就是IsIOS7?0:20*2）多加个判断
-    if ([[UIScreen mainScreen] respondsToSelector:@selector(scale)] && [[UIScreen mainScreen] scale] == 2)
-    {
-        //获取高清size
-        rect = CGRectMake(rectToCut.origin.x*2, rectToCut.origin.y*2+(ios7?0:20*2), (rectToCut.size.width)*2, rectToCut.size.height*2);//创建要剪切的矩形框
-    }
-    else
-    {
-        //获取低清size
-        rect=CGRectMake(rectToCut.origin.x, rectToCut.origin.y+20, rectToCut.size.width, rectToCut.size.height);
-    }
-    
-    UIImage *res = [UIImage imageWithCGImage:CGImageCreateWithImageInRect([snapshot CGImage], rect)];
-    //存到像册
-    
-    return res;
+    CGPoint pt = rectToCut.origin;
+    UIImage *screenImage;
+    UIGraphicsBeginImageContextWithOptions((rectToCut.size), NO, 0.0f);
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    CGContextConcatCTM(context,CGAffineTransformMakeTranslation(-(int)pt.x, -(int)pt.y));
+    [self.layer renderInContext:context];
+    screenImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    return screenImage;
 }
 
 @end
